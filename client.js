@@ -6,7 +6,7 @@ const rl = require('./readline-interface.js');
 
 // initial connect to chat server (hubbub)
 // Socket.io
-const SERVER_URL = 'http://localhost:3000';
+let SERVER_URL = 'https://afternoon-eyrie-23717.herokuapp.com';
 const io = require('socket.io-client');
 let socket = io.connect(SERVER_URL);
 
