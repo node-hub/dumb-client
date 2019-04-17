@@ -1,34 +1,32 @@
 'use strict';
 
-// Readline
-const rl = require('./readline-interface.js');
+// Environment
+require('dotenv').config();
 
-// initial connect to chat server (hubbub)
+// Interface modules
+const log = require('./lib/log.js');
+const rl = require('./lib/readline-interface.js');
+
 // Socket.io
-let SERVER_URL = 'https://afternoon-eyrie-23717.herokuapp.com';
+const SERVER_URL = require('./server-url.js');
 const io = require('socket.io-client');
 let socket = io.connect(SERVER_URL);
 
+log(`Client running on ${SERVER_URL}...`);
+
 // client send one thing, payload from readline
 rl.on('line', line => {
-  // if(line === 'tic-tac-node'){
-  //   socket.disconnect();
-  //   socket = io.connect();
-  // }
-
-  //client needs an `exit` command that takes it back to chat server
-  if (line === 'exit') {
-    console.log('Goodbye');
+  if (line === '/exit') {
+    log('Goodbye');
     socket.disconnect();
     socket = io.connect('http://localhost:3000');
   } else {
-    console.log(`Received: ${line}`);
     socket.emit('input', line);
   }
+  rl.prompt(true); // Show the readline prompt
 });
 
-// client will accept an object from any ext app
-// print object
+// Client will accept and print any payload.display
 socket.on('output', payload => {
-  payload.display();
+  log(payload.display);
 });
