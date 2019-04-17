@@ -1,1 +1,1 @@
-# super-client
+# dumb-client
