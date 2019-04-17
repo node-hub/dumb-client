@@ -4,7 +4,11 @@
   "description": "master client for both groups",
   "main": "client.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node client.js",
+    "watch": "nodemon client.js",
+    "lint": "eslint '**/*.js'",
+    "test": "jest --coverage --verbose",
+    "test-watch": "jest --coverage --verbose --watch"
   },
   "repository": {
     "type": "git",
