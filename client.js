@@ -25,14 +25,8 @@ rl.on('line', line => {
           console.log(entry.name, ' : ', entry.url);
         });
       })
-      .catch(err => {
-        console.log(err);
-      });
-  }
-  // else if( line === '/about' ){
-  //   console.log(socket);
-  // }
-  else if (line.trim().split(' ')[0] === '/launch') {
+      .catch(console.error);
+  } else if (line.trim().split(' ')[0] === '/launch') {
     socket.disconnect();
     socket = io.connect(line.trim().split(' ')[1]);
     socket.on('output', log);
