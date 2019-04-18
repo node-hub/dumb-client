@@ -35,12 +35,11 @@ rl.on('line', line => {
   else if (line.trim().split(' ')[0] === '/launch') {
     socket.disconnect();
     socket = io.connect(line.trim().split(' ')[1]);
-    socket.on('output', payload => {
-      log(payload);
-    });
+    socket.on('output', log);
   } else if (line === '/lobby') {
     socket.disconnect();
     socket = io.connect(SERVER_URL);
+    socket.on('output', log);
   } else if (line === '/exit') {
     socket.disconnect();
     log('Goodbye');
@@ -52,9 +51,7 @@ rl.on('line', line => {
 });
 
 // Client will accept and print any payload.display
-socket.on('output', payload => {
-  log(payload);
-});
+socket.on('output', log);
 
 rl.on('close', () => {
   process.exit(0);
