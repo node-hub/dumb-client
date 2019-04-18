@@ -11,7 +11,7 @@ const rl = require('./lib/readline-interface.js');
 // Socket.io
 const SERVER_URL = require('./server-url.js');
 const io = require('socket.io-client');
-let socket = io.connect(SERVER_URL);
+let socket = io.connect('https://frozen-savannah-62051.herokuapp.com');
 
 log(`Client running on ${SERVER_URL}...`);
 
@@ -53,6 +53,10 @@ rl.on('line', line => {
 // Client will accept and print any payload.display
 socket.on('output', payload => {
   log(payload);
+});
+
+socket.on('clear', () => {
+  console.clear();
 });
 
 rl.on('close', () => {process.exit(0);});
