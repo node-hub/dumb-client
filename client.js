@@ -57,6 +57,10 @@ rl.on('line', line => {
 // Client will accept and print any payload.display
 socket.on('output', log);
 
+socket.on('clear', () => {
+  console.clear();
+});
+
 rl.on('close', () => {
   process.exit(0);
 });
