@@ -18,26 +18,40 @@ const rl = require('./lib/readline-interface.js');
 const io = require('socket.io-client');
 let socket = io.connect(SERVER_URL);
 
+log(`Client running on ${SERVER_URL}...`);
+
+// Client will accept a line and pass it to handlers
+rl.on('line', handleLine);
+
+// Client will accept and print
+// any payload.display
+socket.on('output', log);
+
+socket.on('clear', clear);
+
+rl.on('close', exit);
+
 // Helper functions
-const switchConnection = url => {
+function clear() {
+  console.clear();
+}
+
+function switchConnection(url) {
   socket.disconnect(true);
   socket = io.connect(url);
   socket.on('output', log);
-};
+}
 
-const exit = () => {
+function exit() {
   socket.disconnect(true);
   log(`${emojic.smiley} Have a great day! ${emojic.wave}`);
   rl.close();
   process.exit(0);
-};
+}
 
-log(`Client running on ${SERVER_URL}...`);
-
-// Client will accept a line and pass it to handlers
-rl.on('line', line => {
+function handleLine(line) {
   if (line[0] === '/' && line.length > 1) {
-    const launch = /^\/launch\ http.{7,}/gi;
+    const launch = /^\/launch http.{7,}/gi;
     if (launch.test(line)) {
       const url = line.trim().split(' ')[1];
       switchConnection(url);
@@ -52,15 +66,4 @@ rl.on('line', line => {
     socket.emit('input', line);
   }
   rl.prompt(true); // Show the readline prompt
-});
-
-// Client will accept and print any payload.display
-socket.on('output', log);
-
-socket.on('clear', () => {
-  console.clear();
-});
-
-rl.on('close', () => {
-  process.exit(0);
-});
+}
