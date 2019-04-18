@@ -2,51 +2,68 @@
 
 // Environment
 require('dotenv').config();
-const superagent = require('superagent');
+
+// Set server url based on .env
+const SERVER_URL = require('./server-url.js'); // if NODE_ENV=development, use localhost:3000
+
+// Command logic
+const handleCommand = require('./lib/handle-command.js');
 
 // Interface modules
+const emojic = require('emojic');
 const log = require('./lib/log.js');
 const rl = require('./lib/readline-interface.js');
 
 // Socket.io
-const SERVER_URL = require('./server-url.js');
 const io = require('socket.io-client');
 let socket = io.connect(SERVER_URL);
 
 log(`Client running on ${SERVER_URL}...`);
 
-// client send one thing, payload from readline
-rl.on('line', line => {
-  if (line === '/list') {
-    superagent
-      .get('https://shrouded-everglades-62939.herokuapp.com/api/v1/app-info')
-      .then(results => {
-        results.body.forEach(entry => {
-          console.log(entry.name, ' : ', entry.url);
-        });
-      })
-      .catch(console.error);
-  } else if (line.trim().split(' ')[0] === '/launch') {
-    socket.disconnect();
-    socket = io.connect(line.trim().split(' ')[1]);
-    socket.on('output', log);
-  } else if (line === '/lobby') {
-    socket.disconnect();
-    socket = io.connect(SERVER_URL);
-    socket.on('output', log);
-  } else if (line === '/exit') {
-    socket.disconnect();
-    log('Goodbye');
-    rl.close();
+// Client will accept a line and pass it to handlers
+rl.on('line', handleLine);
+
+// Client will accept and print
+// any payload.display
+socket.on('output', log);
+
+socket.on('clear', clear);
+
+rl.on('close', exit);
+
+// Helper functions
+function clear() {
+  console.clear();
+}
+
+function switchConnection(url) {
+  socket.disconnect(true);
+  socket = io.connect(url);
+  socket.on('output', log);
+}
+
+function exit() {
+  socket.disconnect(true);
+  log(`${emojic.smiley} Have a great day! ${emojic.wave}`);
+  rl.close();
+  process.exit(0);
+}
+
+function handleLine(line) {
+  if (line[0] === '/' && line.length > 1) {
+    const launch = /^\/launch http.{7,}/gi;
+    if (launch.test(line)) {
+      const url = line.trim().split(' ')[1];
+      switchConnection(url);
+    } else if (line === '/lobby') {
+      switchConnection(SERVER_URL);
+    } else if (line === '/exit') {
+      exit();
+    } else {
+      handleCommand(line, socket);
+    }
   } else {
     socket.emit('input', line);
   }
   rl.prompt(true); // Show the readline prompt
-});
-
-// Client will accept and print any payload.display
-socket.on('output', log);
-
-rl.on('close', () => {
-  process.exit(0);
-});
+}
