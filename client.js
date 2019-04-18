@@ -2,6 +2,7 @@
 
 // Environment
 require('dotenv').config();
+const superagent = require('superagent');
 
 // Set server url based on .env
 const SERVER_URL = require('./server-url.js'); // if NODE_ENV=development, use localhost:3000
@@ -32,11 +33,32 @@ socket.on('clear', console.clear);
 rl.on('close', handleReadlineClose);
 
 // Helper functions
+function clear() {
+  console.clear();
+}
+
+function changeApp(game){
+  superagent.get(`${SERVER_URL}/api/v1/app-info/${game}`)
+    .then(results => {
+      let url = results.body[0].url;
+      console.log(url);
+      socket.disconnect(true);
+      socket = io.connect(url);
+      socket.on('output', log);
+      socket.on('clear', clear);
+    })
+    .catch(() => {
+      console.error('Game does not exist');
+    });
+}
+
+
 function switchConnection(url) {
   socket.disconnect(true);
   socket = io.connect(url);
   socket.on('clear', console.clear);
   socket.on('output', log);
+  socket.on('clear', clear);
 }
 
 function exitCommand() {
@@ -51,14 +73,18 @@ function handleReadlineClose() {
 
 function handleLine(line) {
   if (line[0] === '/' && line.length > 1) {
-    const launch = /^\/launch http.{7,}/gi;
+    const launch = /^\/launch/gi;
     if (launch.test(line)) {
-      const url = line.trim().split(' ')[1];
-      switchConnection(url);
+      let app = line.trim().slice(8);
+      console.log(app);
+      changeApp(app);
     } else if (line === '/lobby') {
       switchConnection(SERVER_URL);
     } else if (line === '/exit') {
-      exitCommand();
+      exit();
+    } else if (line === '/dev') {
+      switchConnection('http://localhost:4444');
+
     } else {
       handleCommand(line, socket);
     }
