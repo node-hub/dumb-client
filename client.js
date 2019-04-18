@@ -17,33 +17,34 @@ log(`Client running on ${SERVER_URL}...`);
 
 // client send one thing, payload from readline
 rl.on('line', line => {
-  if( line === '/list' ){
-    superagent.get('https://shrouded-everglades-62939.herokuapp.com/api/v1/app-info')
+  if (line === '/list') {
+    superagent
+      .get('https://shrouded-everglades-62939.herokuapp.com/api/v1/app-info')
       .then(results => {
         results.body.forEach(entry => {
-          console.log(entry.name,' : ', entry.url);
+          console.log(entry.name, ' : ', entry.url);
         });
       })
-      .catch(err => {console.log(err);});
+      .catch(err => {
+        console.log(err);
+      });
   }
   // else if( line === '/about' ){
   //   console.log(socket);
   // }
-  else if ( line.trim().split(' ')[0] === '/launch' ){
+  else if (line.trim().split(' ')[0] === '/launch') {
     socket.disconnect();
     socket = io.connect(line.trim().split(' ')[1]);
     socket.on('output', payload => {
       log(payload);
     });
-  }
-  else if( line === '/lobby' ){
+  } else if (line === '/lobby') {
     socket.disconnect();
     socket = io.connect(SERVER_URL);
-  }
-  else if (line === '/exit' ) {
+  } else if (line === '/exit') {
     socket.disconnect();
     log('Goodbye');
-    rl.close(); 
+    rl.close();
   } else {
     socket.emit('input', line);
   }
@@ -55,4 +56,6 @@ socket.on('output', payload => {
   log(payload);
 });
 
-rl.on('close', () => {process.exit(0);});
+rl.on('close', () => {
+  process.exit(0);
+});
