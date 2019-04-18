@@ -11,7 +11,7 @@ const rl = require('./lib/readline-interface.js');
 // Socket.io
 const SERVER_URL = require('./server-url.js');
 const io = require('socket.io-client');
-let socket = io.connect('https://frozen-savannah-62051.herokuapp.com');
+let socket = io.connect(SERVER_URL);
 
 log(`Client running on ${SERVER_URL}...`);
 
