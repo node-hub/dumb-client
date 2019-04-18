@@ -37,8 +37,9 @@ function clear() {
   console.clear();
 }
 
-function changeApp(game){
-  superagent.get(`${SERVER_URL}/api/v1/app-info/${game}`)
+function changeApp(game) {
+  superagent
+    .get(`${SERVER_URL}/api/v1/app-info/${game}`)
     .then(results => {
       let url = results.body[0].url;
       console.log(url);
@@ -51,7 +52,6 @@ function changeApp(game){
       console.error('Game does not exist');
     });
 }
-
 
 function switchConnection(url) {
   socket.disconnect(true);
@@ -81,10 +81,9 @@ function handleLine(line) {
     } else if (line === '/lobby') {
       switchConnection(SERVER_URL);
     } else if (line === '/exit') {
-      exit();
+      exitCommand();
     } else if (line === '/dev') {
       switchConnection('http://localhost:4444');
-
     } else {
       handleCommand(line, socket);
     }
