@@ -3,13 +3,14 @@
 // Environment
 require('dotenv').config();
 
-// Set server url based on env
+// Set server url based on .env
 const SERVER_URL = require('./server-url.js'); // if NODE_ENV=development, use localhost:3000
 
 // Command logic
 const handleCommand = require('./lib/handle-command.js');
 
 // Interface modules
+const emojic = require('emojic');
 const log = require('./lib/log.js');
 const rl = require('./lib/readline-interface.js');
 
@@ -17,18 +18,33 @@ const rl = require('./lib/readline-interface.js');
 const io = require('socket.io-client');
 let socket = io.connect(SERVER_URL);
 
+// Helper functions
+const switchConnection = url => {
+  socket.disconnect(true);
+  socket = io.connect(url);
+  socket.on('output', log);
+};
+
+const exit = () => {
+  socket.disconnect(true);
+  log(`${emojic.smiley} Have a great day! ${emojic.wave}`);
+  rl.close();
+  process.exit(0);
+};
+
 log(`Client running on ${SERVER_URL}...`);
 
-// client send one thing, payload from readline
+// Client will accept a line and pass it to handlers
 rl.on('line', line => {
   if (line[0] === '/' && line.length > 1) {
-    const regex = /^\/launch\ http.{7,}/gi;
-    if (regex.test(line)) {
-      socket.disconnect(true);
-      const url = line.split(' ')[1];
-      console.log('urur:', url);
-      socket = io.connect(url);
-      socket.on('output', log);
+    const launch = /^\/launch\ http.{7,}/gi;
+    if (launch.test(line)) {
+      const url = line.trim().split(' ')[1];
+      switchConnection(url);
+    } else if (line === '/lobby') {
+      switchConnection(SERVER_URL);
+    } else if (line === '/exit') {
+      exit();
     } else {
       handleCommand(line, socket);
     }
