@@ -2,6 +2,7 @@
 
 // Environment
 require('dotenv').config();
+const superagent = require('superagent');
 
 // Interface modules
 const log = require('./lib/log.js');
@@ -16,10 +17,33 @@ log(`Client running on ${SERVER_URL}...`);
 
 // client send one thing, payload from readline
 rl.on('line', line => {
-  if (line === '/exit') {
-    log('Goodbye');
+  if( line === '/list' ){
+    superagent.get('https://shrouded-everglades-62939.herokuapp.com/api/v1/app-info')
+      .then(results => {
+        results.body.forEach(entry => {
+          console.log(entry.name,' : ', entry.url);
+        });
+      })
+      .catch(err => {console.log(err);});
+  }
+  // else if( line === '/about' ){
+  //   console.log(socket);
+  // }
+  else if ( line.trim().split(' ')[0] === '/launch' ){
     socket.disconnect();
-    socket = io.connect('http://localhost:3000');
+    socket = io.connect(line.trim().split(' ')[1]);
+    socket.on('output', payload => {
+      log(payload);
+    });
+  }
+  else if( line === '/lobby' ){
+    socket.disconnect();
+    socket = io.connect(SERVER_URL);
+  }
+  else if (line === '/exit' ) {
+    socket.disconnect();
+    log('Goodbye');
+    rl.close(); 
   } else {
     socket.emit('input', line);
   }
@@ -28,5 +52,7 @@ rl.on('line', line => {
 
 // Client will accept and print any payload.display
 socket.on('output', payload => {
-  log(payload.display);
+  log(payload);
 });
+
+rl.on('close', () => {process.exit(0);});
