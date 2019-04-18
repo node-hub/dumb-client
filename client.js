@@ -2,14 +2,18 @@
 
 // Environment
 require('dotenv').config();
-const superagent = require('superagent');
+
+// Set server url based on env
+const SERVER_URL = require('./server-url.js'); // if NODE_ENV=development, use localhost:3000
+
+// Command logic
+const handleCommand = require('./lib/handle-command.js');
 
 // Interface modules
 const log = require('./lib/log.js');
 const rl = require('./lib/readline-interface.js');
 
 // Socket.io
-const SERVER_URL = require('./server-url.js');
 const io = require('socket.io-client');
 let socket = io.connect(SERVER_URL);
 
@@ -17,27 +21,17 @@ log(`Client running on ${SERVER_URL}...`);
 
 // client send one thing, payload from readline
 rl.on('line', line => {
-  if (line === '/list') {
-    superagent
-      .get('https://shrouded-everglades-62939.herokuapp.com/api/v1/app-info')
-      .then(results => {
-        results.body.forEach(entry => {
-          console.log(entry.name, ' : ', entry.url);
-        });
-      })
-      .catch(console.error);
-  } else if (line.trim().split(' ')[0] === '/launch') {
-    socket.disconnect();
-    socket = io.connect(line.trim().split(' ')[1]);
-    socket.on('output', log);
-  } else if (line === '/lobby') {
-    socket.disconnect();
-    socket = io.connect(SERVER_URL);
-    socket.on('output', log);
-  } else if (line === '/exit') {
-    socket.disconnect();
-    log('Goodbye');
-    rl.close();
+  if (line[0] === '/' && line.length > 1) {
+    const regex = /^\/launch\ http.{7,}/gi;
+    if (regex.test(line)) {
+      socket.disconnect(true);
+      const url = line.split(' ')[1];
+      console.log('urur:', url);
+      socket = io.connect(url);
+      socket.on('output', log);
+    } else {
+      handleCommand(line, socket);
+    }
   } else {
     socket.emit('input', line);
   }
