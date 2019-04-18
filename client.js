@@ -42,7 +42,7 @@ rl.on('line', line => {
   }
   else if (line === '/exit' ) {
     socket.disconnect();
-    log('Goodbye. control+c to full exit the app');
+    log('Goodbye');
     rl.close(); 
   } else {
     socket.emit('input', line);
