@@ -28,9 +28,9 @@ rl.on('line', handleLine);
 // any payload.display
 socket.on('output', log);
 
-socket.on('clear', clear);
+socket.on('clear', console.clear);
 
-rl.on('close', exit);
+rl.on('close', handleReadlineClose);
 
 // Helper functions
 function clear() {
@@ -56,14 +56,18 @@ function changeApp(game){
 function switchConnection(url) {
   socket.disconnect(true);
   socket = io.connect(url);
+  socket.on('clear', console.clear);
   socket.on('output', log);
   socket.on('clear', clear);
 }
 
-function exit() {
+function exitCommand() {
   socket.disconnect(true);
-  log(`${emojic.smiley} Have a great day! ${emojic.wave}`);
   rl.close();
+}
+
+function handleReadlineClose() {
+  log(`${emojic.smiley} Have a great day! ${emojic.wave}`);
   process.exit(0);
 }
 
@@ -80,6 +84,7 @@ function handleLine(line) {
       exit();
     } else if (line === '/dev') {
       switchConnection('http://localhost:4444');
+
     } else {
       handleCommand(line, socket);
     }
