@@ -29,7 +29,7 @@ socket.on('output', log);
 
 socket.on('clear', clear);
 
-rl.on('close', exit);
+rl.on('close', handleReadlineClose);
 
 // Helper functions
 function clear() {
@@ -42,10 +42,13 @@ function switchConnection(url) {
   socket.on('output', log);
 }
 
-function exit() {
+function exitCommand() {
   socket.disconnect(true);
-  log(`${emojic.smiley} Have a great day! ${emojic.wave}`);
   rl.close();
+}
+
+function handleReadlineClose() {
+  log(`${emojic.smiley} Have a great day! ${emojic.wave}`);
   process.exit(0);
 }
 
@@ -58,7 +61,7 @@ function handleLine(line) {
     } else if (line === '/lobby') {
       switchConnection(SERVER_URL);
     } else if (line === '/exit') {
-      exit();
+      exitCommand();
     } else {
       handleCommand(line, socket);
     }
