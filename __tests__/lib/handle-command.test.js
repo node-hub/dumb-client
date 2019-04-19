@@ -31,7 +31,7 @@ describe('`handleCommand` function', () => {
       const socket = {};
 
       handleCommand(line, socket);
-      // expect(parse).toHaveBeenCalledWith(line);
+      expect(parse).toHaveBeenCalledWith(line);
       expect(handlerFinder).toHaveBeenCalledWith(cmd);
       // expect(handler).toHaveBeenCalledWith(arg, socket, line);
     } catch (err) {
