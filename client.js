@@ -8,7 +8,7 @@ const superagent = require('superagent');
 const SERVER_URL = require('./server-url.js'); // if NODE_ENV=development, use localhost:3000
 
 // Command logic
-const handleCommand = require('./lib/handle-command.js');
+const { handleCommand } = require('./lib/handle-command.js');
 
 // Interface modules
 const emojic = require('emojic');
